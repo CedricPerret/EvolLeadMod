@@ -63,8 +63,7 @@ public class LeadEvolMod2 {
 
         
         //This code is made to be run by cluster. It can be run on personal machine using run configuration on eclipse or the terminal
-        //The parameters need to be set up following the file Parameters
-        //For instance:
+        //The parameters need to be set up when launching the jar file following the file parameters in the format: -nameParameter valueParameter
         for(int iSimul =0; iSimul < parameters.nSimul; iSimul++){
         new Model(
                 parameters.nGen, parameters.P, parameters.nIndIni, 
