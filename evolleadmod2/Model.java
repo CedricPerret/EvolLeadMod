@@ -20,11 +20,10 @@ public class Model extends Thread {
     private int nGen;private int P;private int nIndIni;
     private double rI; private double rBMax; private double rBInc;
     private int K; private double bMax; private double bInc; private double bMid;
-    private double C; private double lambda; private double costNego;
-    private double fThr; private int nL;
+    private double C; private double lambda;
+    private double xThr; private int nL; private double kAlpha;
     private double mu; private double sigma; private double d; 
-    private double costM;; private double m;
-    private boolean theta;
+    private double m;
     private ZipOutputStream pw;
     //private PrintWriter pw;
     private long seed;
@@ -37,11 +36,10 @@ public class Model extends Thread {
         int nGen,int P,int nIndIni,
         double rI, double rBMax, double rBInc,
         int K, double bMax, double bInc, double bMid,
-        double C, double lambda, double costNego,
-        double fThr, int nL,
+        double C, double lambda,
+        double xThr, int nL, double kAlpha,
         double mu, double sigma, double d, 
-        double costM, double m,
-        boolean theta,
+        double m,
         ZipOutputStream pw,
         //PrintWriter pw,
         long seed,
@@ -54,11 +52,10 @@ public class Model extends Thread {
         this.nGen = nGen;this.P = P;this.nIndIni = nIndIni;
         this.rI = rI; this.rBMax = rBMax; this.rBInc = rBInc;
         this.K = K; this.bMax = bMax; this.bInc = bInc; this.bMid = bMid;
-        this.C = C; this.lambda = lambda; this.costNego = costNego;
-        this.fThr = fThr; this.nL = nL;
+        this.C = C; this.lambda = lambda;
+        this.xThr = xThr; this.nL = nL; this.kAlpha = kAlpha;
         this.mu = mu; this.sigma = sigma; this.d = d; 
-        this.costM = costM; this.m = m;
-        this.theta = theta;
+        this.m = m;
         this.pw = pw;
         this.seed = seed;
         this.nameFile = nameFile;
@@ -75,9 +72,9 @@ public class Model extends Thread {
     
     //@Override
     public void run(){
-        double fVar; double thetaSum; double probTemp;int speaker; int nL2; double diffAlpha; int nEvent;double bTot; double r; double I; double w; double rB;
-        int off; double alphaTemp; double thetaTemp; double zTemp; double fTemp; String resTemp =""; int printJump = 10;
-        double[][] resFConsensus = new double[nGen+1][P];
+        double sdX; double alphaSum; double probTemp;int speaker; int nL2; double diffAlpha; int nEvent;double bTot; double r; double I; double w; double rB;
+        int off; double alphaTemp; double zTemp; double xTemp; String resTemp =""; int printJump = 10;
+        double[][] resXConsensus = new double[nGen+1][P];
         double[][] resTConsensus = new double[nGen+1][P];
         double[][] resBTot = new double[nGen+1][P];
         double[] bTotPre = new double[P];
@@ -95,23 +92,10 @@ public class Model extends Thread {
             Logger.getLogger(Model.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-            //Writing parameters
-            
-//            try {
-//                pw.write(("nGen,P,nIndIni,rI,K,bMax,bInc,C,fIni,fThr,nL,mu,sigma,d,costM,m,lambda,\r\n"+
-//                        nGen + P + nIndIni + rI + K + bMax + bInc + C + fIni +fThr +nL + mu +sigma + d + costM + m + lambda + "\r\n"+
-//                        seed+"\r\n").getBytes()); 
-//            } catch (IOException ex) {
-//                Logger.getLogger(Model.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        
-//            if(seed == 0){pw.write(("nGen,P,nIndIni,rI,K,bMax,bInc,bMid,C,fIni,fThr,nL,mu,sigma,d,costM,m,lambda,\r\n"+
-//                nGen + P + nIndIni + rI + K + bMax + bInc + bMid + C + fIni +fThr +nL + mu +sigma + d + costM + m + lambda + "\r\n"+
-//                seed+"\r\n"));}
            
            //Initialization ====================================================
            //Table for f* and t*
-            resFConsensus = new double[nGen+1][P];                             
+            resXConsensus = new double[nGen+1][P];                             
             resTConsensus = new double[nGen+1][P];
             resBTot = new double[nGen+1][P];
             //Table for populations
@@ -123,7 +107,7 @@ public class Model extends Thread {
                     bTotPre[j] = 0;                                             //Initial bTotPre Array
             //Initial population t=0
                     for(int k=0; k<nIndIni; k++){     
-                        popNow.get(j).add(new Individual(utility.randomDouble(),utility.randomDouble(),utility.randomDouble(),utility.randomDouble()));
+                        popNow.get(j).add(new Individual(utility.randomDouble(),utility.randomDouble(),utility.randomDouble()));
                     }
                 }
             // SIMULATIONS =====================================================
@@ -149,13 +133,13 @@ public class Model extends Thread {
 
                     double[] probSpeaker = new double[popNow.get(j).size()];    // Initial array of the probability of speaking of each individual
                     //Talkativeness Theta : probability of speaking-------------
-                    thetaSum = 0;                                               //Sum of theta to then normalize
+                    alphaSum = 0;                                               //Sum of alpha to then normalize
                     for(int k=0; k<popNow.get(j).size(); k++){                       
-                    thetaSum += Math.pow(popNow.get(j).get(k).getTheta(),4);
+                    alphaSum += Math.pow(popNow.get(j).get(k).getAlpha(),4);
                     }
                     probTemp = 0;                
                     for(int k=0; k<popNow.get(j).size(); k++){                  //We calculate the weigthed probabilities
-                    probSpeaker[k]= probTemp + (Math.pow(popNow.get(j).get(k).getTheta(),4)/thetaSum);
+                    probSpeaker[k]= probTemp + (Math.pow(popNow.get(j).get(k).getAlpha(),kAlpha)/alphaSum);
                     probTemp = probSpeaker[k];
                     }
                     
@@ -165,31 +149,31 @@ public class Model extends Thread {
                     else {nL2 = nL;}
                     
                     for(int negoCounter = 0; negoCounter<maxNegoEvent; negoCounter++) {
-	                    fVar = utility.variancePref(popNow.get(j));                 // Initial pref sd
+	                    sdX = utility.sdPref(popNow.get(j));                 // Initial pref sd
 	                    nEvent = 0;                                                 // Initial number of negotiation event
 	                    //Simulations of negotiations-------------------------------
-	                    while(fVar > fThr){
-	                        speaker = utility.probSample(probSpeaker, utility.randomDouble());           //Speaker chosen in function of theta
+	                    while(sdX > xThr){
+	                        speaker = utility.probSample(probSpeaker, utility.randomDouble());           //Speaker chosen in function of alpha
 	                        popNow.get(j).get(speaker).addCountNego();                              //Count number of negociation individual take part in
 	                        listenerList = utility.randomSampleOtherList(popNow.get(j).size(), nL2,speaker);            //Listener chosen randomly in the rest of the population
 	                        for(int l=0; l<nL2; l++){                               //Update the preference of each listener
 	                            diffAlpha =  popNow.get(j).get(speaker).getAlpha() - popNow.get(j).get(listenerList[l]).getAlpha();
 	                            if(diffAlpha <= 0.01){diffAlpha = 0.01;}             // If values of alpha are the same
-	                            popNow.get(j).get(listenerList[l]).setFNego(popNow.get(j).get(listenerList[l]).getFNego() + diffAlpha * (popNow.get(j).get(speaker).getFNego()-popNow.get(j).get(listenerList[l]).getFNego()));
+	                            popNow.get(j).get(listenerList[l]).setXNego(popNow.get(j).get(listenerList[l]).getXNego() + diffAlpha * (popNow.get(j).get(speaker).getXNego()-popNow.get(j).get(listenerList[l]).getXNego()));
 	                        }
 	                        nEvent++;     
-	                        fVar = utility.variancePref(popNow.get(j));		
+	                        sdX = utility.sdPref(popNow.get(j));		
 	                        //if(nEvent == C){break;}                                 //To faster the code : If cost of consensus > 1, we stop
 	                    }
 	                    
 	                    //Outcomes of the negotiation process----------------------- 
 	                    resTConsensus[i][j] = resTConsensus[i][j]+(nEvent/maxNegoEvent);           //We write the tConsensus
-	                    resFConsensus[i][j] = utility.meanPref(popNow.get(j));      //We write the fConsensus
+	                    resXConsensus[i][j] = utility.meanPref(popNow.get(j));      //We write the fConsensus
 	                    for(Individual ind : popNow.get(j)) {
 	                    	ind.setBias(ind.getBias()+
-	                    			(1-Math.abs(ind.getF()-resFConsensus[i][j])));
-	                    	ind.setF(utility.randomDouble());
-	                    	ind.setFNego(ind.getF());
+	                    			(1-Math.abs(ind.getX()-resXConsensus[i][j])));
+	                    	ind.setX(utility.randomDouble());
+	                    	ind.setXNego(ind.getX());
 	                    }
                     }
 
@@ -203,9 +187,6 @@ public class Model extends Thread {
                     		//Logistic
                     //bTot = (bMax*(1-Math.exp(-bInc*(popNow.get(j).size()))))-I;if(bTot < 0){bTot = 0;}
                     
-                    if((bMax/(1+Math.exp(-bInc*(100 - bMid))))>(bMax/(1+Math.exp(-bInc*(200 - bMid))))) {
-                    	System.out.println("Probleme with bTot function");
-                    }
                     resBTot[i][j] = bTot; 
                     	
                     //DISTRIBUTION OF RESOURCES=================================
@@ -234,7 +215,7 @@ public class Model extends Thread {
 	                
                     //Calcul of personal share
                     for(int k=0; k<popNow.get(j).size(); k++){
-                        rB = rBMax*(1-Math.exp(-rBInc*(bTot+(bTotPre[j]*lambda)) * valueDistribution[k])) - (popNow.get(j).get(k).getCountNego()*costNego);      //Calcul increase of growth rate in function of collective action ressource at t and t-1  
+                        rB = rBMax*(1-Math.exp(-rBInc*(bTot+(bTotPre[j]*lambda)) * valueDistribution[k]));      //Calcul increase of growth rate in function of collective action ressource at t and t-1  
                     	if(rB<0){rB=0;}
                         w = (rI/(1+(popNow.get(j).size()/K)))  + rB ;                     //Calcul fitness
                         popNow.get(j).get(k).setW(w);
@@ -243,19 +224,20 @@ public class Model extends Thread {
                         popNow.get(j).get(k).setOff(off);
 
                         //WRITING-----------------------------------------------
+                        //detail = 0 -> by gen, =1 -> by patch, =2 -> by individual
                         if(detail==2) {
 	                        if(i>=firstPrint&(i==0 || (i+1)%stepData==0)) {
 	                            resTemp = resTemp + popNow.get(j).get(k).getAlpha()
 	                            +","
 	                            + popNow.get(j).get(k).getBias()
 	                            +","
-	                            + popNow.get(j).get(k).getF()
+	                            + popNow.get(j).get(k).getX()
 	                            +","
 	                            + popNow.get(j).get(k).getW()
 	                            //+","
 	                            //+ popNow.get(j).get(k).getOff()
 	                            +","
-	                            + resFConsensus[i][j]
+	                            + resXConsensus[i][j]
 	                            + ","
 	                            + resTConsensus[i][j]
 	                            + ","
@@ -280,7 +262,7 @@ public class Model extends Thread {
                             + ","
                             + resBTot[i][j]
                             + ","
-                            + resFConsensus[i][j]
+                            + resXConsensus[i][j]
                             + ","
                             + popNow.get(j).size()
                             + ","
@@ -317,7 +299,7 @@ public class Model extends Thread {
                 		+ ","
                 		+ utility.mean(resBTot[i])
                 		+ ","
-                		+ utility.mean(resFConsensus[i])
+                		+ utility.mean(resXConsensus[i])
                 		+","
                 		+ utility.mean(sizePatch)
                 		+","
@@ -342,21 +324,17 @@ public class Model extends Thread {
                     if(popNow.get(j).isEmpty()){continue;}                       //Empty patch (break different than continue)
                     for(int k=0; k<popNow.get(j).size(); k++){
                         alphaTemp = popNow.get(j).get(k).getAlpha();
-                        thetaTemp = popNow.get(j).get(k).getTheta();
-                        fTemp = utility.randomDouble();
+                        xTemp = utility.randomDouble();
                         zTemp = popNow.get(j).get(k).getZ(); 
                         for(int l=0; l<popNow.get(j).get(k).getOff(); l++){
                             //Mutations-----------------------------------------
                             if(utility.testProb(mu) == 1){alphaTemp = utility.mutation(alphaTemp,sigma,0.1,1);} 
                             if(utility.testProb(mu) == 1){zTemp = utility.mutation(zTemp,(sigma),0.0,1);}
-                            if(theta == true){thetaTemp = alphaTemp;}
-                            else{thetaTemp = 1;}
                             //Migration-----------------------------------------
-                            if(P != 1 && utility.testProb(m) == 1){       
-                                if(utility.testProb(costM)==0){     
-                                    popNext.get(utility.randomSampleOther(P,j)).add(new Individual(alphaTemp,thetaTemp,fTemp,zTemp));}
-                                }
-                            else{popNext.get(j).add(new Individual(alphaTemp,thetaTemp,fTemp,zTemp));}
+                            if(P != 1 && utility.testProb(m) == 1){         
+                                 popNext.get(utility.randomSampleOther(P,j)).add(new Individual(alphaTemp,xTemp,zTemp));
+                                 }
+                            else{popNext.get(j).add(new Individual(alphaTemp,xTemp,zTemp));}
                         }
                     }
                 }
@@ -369,8 +347,8 @@ public class Model extends Thread {
                 }
                     
                 }
-                System.out.println("nGen,P,nIndIni,rI,K,bMax,bInc,bMid,C,fThr,nL,mu,sigma,d,costM,m,lambda,\r\n"+
-                nGen + P + nIndIni + rI + K + bMax + bInc + bMid + C +fThr +nL + mu +sigma + d + costM + m + lambda + "\r\n"+
+                System.out.println("nGen,P,nIndIni,rI,K,bMax,bInc,bMid,C,xThr,nL,mu,sigma,d,m,lambda,\r\n"+
+                nGen + P + nIndIni + rI + K + bMax + bInc + bMid + C +xThr +nL + mu +sigma + d + m + lambda + "\r\n"+
                 seed+"\r\n");
                 
                nbreModelOver++;

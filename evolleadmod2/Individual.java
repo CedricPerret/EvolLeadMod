@@ -3,22 +3,18 @@ package evolleadmod2;
 import java.util.Comparator;
 
 public class Individual implements Comparable<Individual> {
-    // Communication skill
+    // Influence
     private double alpha;
-    //Talkativeness (Probability of speaking)
-    private double theta;
-    // Preference (fairness)
-    private double f;
+    // Initial opinion/preference
+    private double x;
     // Preference Negotiated
-    private double fNego;
+    private double xNego;
     //Number of negotiations
     private double countNego;
-    // Migration preference
+    // Migration preference (if conditional migration: not used here)
     private double z;
     //fitness
     private double w;
-    //Conditional migration ?
-    //private int m;
     //Number of offsprings
     private int off;
     //Bias
@@ -32,9 +28,8 @@ public class Individual implements Comparable<Individual> {
     public Individual(){
         System.out.println("Creation of a default individual");
         alpha = 0;
-        theta = 1;
-        f = 0;
-        fNego = 0;
+        x = 0;
+        xNego = 0;
         countNego = 0;
         z = 0;
         w = -1;
@@ -44,11 +39,10 @@ public class Individual implements Comparable<Individual> {
         bias = 0;
     }
     
-    public Individual(double pAlpha, double pTheta, double pF, double pZ){
+    public Individual(double pAlpha, double pX, double pZ){
         alpha = pAlpha;
-        theta = pAlpha;
-        f = pF; 
-        fNego = pF;
+        x = pX; 
+        xNego = pX;
         countNego = 0;
         z = pZ;
         w = -1;
@@ -60,9 +54,8 @@ public class Individual implements Comparable<Individual> {
     
     public Individual(Individual pIndividual){
         alpha = pIndividual.alpha;
-        theta = pIndividual.theta;
-        f = pIndividual.f;
-        fNego = pIndividual.fNego;
+        x = pIndividual.x;
+        xNego = pIndividual.xNego;
         countNego = 0;
         z = pIndividual.z;
         w = -1;
@@ -73,30 +66,22 @@ public class Individual implements Comparable<Individual> {
     }
     //Setters
     public void setAlpha(double pAlpha){alpha = pAlpha;}
-    public void setTheta(double pTheta){theta = pTheta;}
-    public void setF(double pF){f = pF;}
-    public void setFNego(double pFNego){fNego = pFNego;}
+    public void setX(double pX){x = pX;}
+    public void setXNego(double pXNego){xNego = pXNego;}
     public void setCountNego(double pCountNego){countNego = pCountNego;}
     public void setZ(double pZ){z = pZ;}
     public void setW(double pW){w = pW;}
-    //public void setM(int pM){m = pM;}
     public void setOff(int pOff){off = pOff;}
     public void setBias(double pBias) {bias=pBias;}
     //Getters
     public double getAlpha(){return alpha;}
-    public double getTheta(){return theta;}
-    public double getF(){return f;}
-    public double getFNego(){return fNego;}
+    public double getX(){return x;}
+    public double getXNego(){return xNego;}
     public double getCountNego(){return countNego;}
     public double getZ(){return z;}
     public double getW(){return w;}
-    //public int getM(){return m;}
     public int getOff(){return off;}
     public double getBias() {return bias;}
-    
-    public String Description(){
-        return "\nalpha = " + alpha + " \ntheta = " + theta + "\nw = " + w + "\nf = " + f + "\nfNego" + fNego + "\nz = " + z + "\noff = " + off ;
-    }
     
     public void addCountNego(){
         this.countNego++;

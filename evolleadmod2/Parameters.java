@@ -48,8 +48,6 @@ public class Parameters {
 	  public Double rBInc;
 	  @Parameter(names = {"--migrationRate","-m" }, description = "Migration rate")
 	  public Double m;
-	  @Parameter(names = {"--costMigration","-costM" }, description = "Cost of migration rate = probability to die during migration")
-	  public Double costM;
 	  
 	  //Collective action and additional resources
 	  @Parameter(names = {"--collectiveRessourcesMax","-bMax" }, description = "Maximum ressources produced by collective action")
@@ -64,12 +62,10 @@ public class Parameters {
 	  //Collective decision-making process
 	  @Parameter(names = {"--nListeners","-nL" }, description = "Number of listeners during a single negotiation event")
 	  public Integer nL;
-	  @Parameter(names = {"--costNegociation","-Cn" }, description = "Cost of a single negotiaiton event")
-	  public Double costNego;
-	  @Parameter(names = {"--consensusThreshold","-fThr" }, description = "Variance threshold under which consensus is considered reached")
-	  public Double fThr;
-	  @Parameter(names = {"--theta","-T" }, description = "Does speaker are chosen in function of their influence")
-	  public Boolean theta = false;
+	  @Parameter(names = {"--consensusThreshold","-xThr" }, description = "Variance threshold under which consensus is considered reached")
+	  public Double xThr;
+	  @Parameter(names = {"-k" }, description = "Parameter controlling how much alpha affects talkativeness")
+	  public Double kAlpha;
 	  
 	  //Collective institutions
 	  @Parameter(names = {"--costCollectiveDecision","-C" }, description = "Inverse of Total cost of collective decision making")

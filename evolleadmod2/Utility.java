@@ -16,7 +16,7 @@ public class Utility {
         this.skewnessCalculator = new Skewness();
     }
     
-    //
+    
     public double randomDouble(){
         return randomGenerator.nextDouble();
     }
@@ -35,7 +35,7 @@ public class Utility {
         return(pList);
     }
     
-    //Method to simulate mutation event affecting the social strategy
+    //Sample an individual except one
     public int randomSampleOther(int pArrayL, int pIndex){
         //if(pLArray == 1){System.out.println("BUG randomSampleOther List too short");}
         ArrayList<Integer> resList = new ArrayList();
@@ -45,7 +45,7 @@ public class Utility {
         return resList.get(index);
         }
     
-    //Method to simulate mutation event affecting the social strategy
+    //Sample a number of individuals except one
     public int[] randomSampleOtherList(int pArrayL, int pSampleSize, int pIndex){
         //if(pLArray == 1){System.out.println("BUG randomSampleOther List too short");}
         ArrayList<Integer> resList = new ArrayList();
@@ -60,8 +60,9 @@ public class Utility {
         }
         return indexL;
         }
-
-    public int probSample(double[] pArrayProb, double pKey){             //Binary search algorithm for sampling probability
+    
+    //Binary search algorithm for sampling probability
+    public int probSample(double[] pArrayProb, double pKey){             
                             int lower = 0;
                             int upper = pArrayProb.length-1;
                             int mid;
@@ -78,14 +79,14 @@ public class Utility {
                         }
     
     //Calcul of variance
-    public double variancePref(List<Individual> pList){
+    public double sdPref(List<Individual> pList){
         double M= 0;
         double S = 0;
         double oldM;
         for(int i = 0; i < pList.size(); i++){
             oldM = M;
-            M += (pList.get(i).getFNego()-M)/(i+1);
-            S += (pList.get(i).getFNego()-M) * (pList.get(i).getFNego()-oldM);
+            M += (pList.get(i).getXNego()-M)/(i+1);
+            S += (pList.get(i).getXNego()-M) * (pList.get(i).getXNego()-oldM);
         }
         return (Math.sqrt(S/(pList.size()-1)));
     }
@@ -101,11 +102,11 @@ public class Utility {
     
     //Calcul of mean of the preferences
     public double meanPref(List<Individual> pList){
-        double sumF = 0;
+        double sumX = 0;
         for(int i = 0; i < pList.size(); i++){
-            sumF += pList.get(i).getFNego();
+            sumX += pList.get(i).getXNego();
         }
-        return(sumF/(pList.size()));
+        return(sumX/(pList.size()));
     }
     
     // Method to create a discrete distribution of negative exponential form
