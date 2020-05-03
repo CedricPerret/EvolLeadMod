@@ -8,6 +8,6 @@ External libraries required:\
 commons-cli-1.4\
 commons-math3-3.6.1\
 commons-io-2.5\
-jcommander\
+jcommander
 
 For any questions, please contact cedric.perret.research@gmail.com
